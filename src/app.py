@@ -8,7 +8,7 @@ with st.sidebar:
         '''
         ## About
         A simple Open-AI powered application to chat and explore the contents of PDFs, the app leverages the following tech.
-        1. OpenAI   
+        1. OpenAI (For the embedding and llm models) 
         2. LangChain (High level API to interact with LLMs)
         3. Streamlit (For quick GUI)
         4. FAISS (Vector Database)

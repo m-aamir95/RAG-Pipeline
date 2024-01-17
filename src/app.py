@@ -1,5 +1,8 @@
 import streamlit as st
+
 from PyPDF2 import PdfReader
+
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 st.set_page_config(page_title='PDF-GPT', layout = 'wide', initial_sidebar_state = 'auto')
 with st.sidebar:
@@ -31,7 +34,19 @@ def main():
         for page in pdf_reader.pages:
             text += page.extract_text()
 
-        st.write(text)
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000, # Tokens
+            chunk_overlap=200, # Overlap between the adjacent chunks
+                               # Both adjacent chunks will share 200 tokens 
+                               # This helps in not loosing the context of the 
+                               # conversation 
+            length_function=len
+        )
+
+        chunks = text_splitter.split_text(text)
+
+        st.write(chunks)
+
 
 if __name__ == "__main__":
     main()

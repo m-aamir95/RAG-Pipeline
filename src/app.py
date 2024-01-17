@@ -1,8 +1,13 @@
+import os
+import pickle
+
 import streamlit as st
 
 from PyPDF2 import PdfReader
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.vectorstores import faiss
 
 st.set_page_config(page_title='PDF-GPT', layout = 'wide', initial_sidebar_state = 'auto')
 with st.sidebar:
@@ -26,8 +31,12 @@ def main():
 
     st.header("Chat with the PDF")
     pdf = st.file_uploader("Upload PDF", type="pdf")
+  
 
     if pdf is not None:
+        filename = str(pdf.name).split('.')[0]
+        st.write(filename)
+
         pdf_reader = PdfReader(pdf)
         
         text = ""
@@ -45,7 +54,14 @@ def main():
 
         chunks = text_splitter.split_text(text)
 
-        st.write(chunks)
+        #Embeddings 
+        # TODO,this will hit OpenAI API with each RUN
+        embeddings = OpenAIEmbeddings()
+        vector_store = faiss.FAISS.from_texts(chunks, embeddings)
+
+        embeddings_file = os.path.join("openai_computed_embeddings", f"{filename}.pkl")
+        with open(embeddings_file, "wb") as f:
+            pickle.dump(vector_store, f)
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ from PyPDF2 import PdfReader
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import faiss
+from langchain_community.vectorstores import faiss
 
 st.set_page_config(page_title='PDF-GPT', layout = 'wide', initial_sidebar_state = 'auto')
 with st.sidebar:
@@ -59,9 +59,10 @@ def main():
         embeddings = OpenAIEmbeddings()
         vector_store = faiss.FAISS.from_texts(chunks, embeddings)
 
-        embeddings_file = os.path.join("openai_computed_embeddings", f"{filename}.pkl")
-        with open(embeddings_file, "wb") as f:
-            pickle.dump(vector_store, f)
+        # Will create a new directory for each embedding
+        embeddings_file = os.path.join("openai_computed_embeddings", f"{filename}")
+
+        vector_store.save_local(embeddings_file)
 
 
 if __name__ == "__main__":

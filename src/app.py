@@ -8,6 +8,9 @@ from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain_community.vectorstores import faiss
+from langchain.llms import openai
+from langchain.chains.question_answering  import load_qa_chain
+from langchain.callbacks import get_openai_callback
 
 st.set_page_config(page_title='PDF-GPT', layout = 'wide', initial_sidebar_state = 'auto')
 with st.sidebar:
@@ -84,8 +87,20 @@ def main():
         query = st.text_input("Ask Questions")
 
         if query:
-            similar_docs = vector_store.similarity_search(query=query)
-            st.write(similar_docs)
+            # K is important because a large K might make us go above the LLM context
+            similar_docs = vector_store.similarity_search(query=query, k=3)
+
+            llm = openai.OpenAI(temperature=0)
+
+            with get_openai_callback() as openai_callback_with_info:
+                # TODO, there are different types of chains
+                chain = load_qa_chain(llm=llm, chain_type="stuff")
+                resp = chain.run(input_documents=similar_docs, question=query)
+                print(openai_callback_with_info)
+
+            st.write(resp)
+
+
 
 
 if __name__ == "__main__":

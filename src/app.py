@@ -40,6 +40,9 @@ def main():
 
         embedding_already_computed = os.path.exists(embeddings_file)
 
+        # Vector store for our knowledge base
+        vector_store = None
+
         if not embedding_already_computed:
 
             st.write(f"Computing Embeddings For -> {filename}")
@@ -62,9 +65,10 @@ def main():
             )
 
             chunks = text_splitter.split_text(text)
-
+            
+            
             #Embeddings 
-            # TODO,this will hit OpenAI API with each RUN
+            # TODO,warning this will hit OpenAI API with each RUN
             embeddings = OpenAIEmbeddings()
             vector_store = faiss.FAISS.from_texts(chunks, embeddings)
 
@@ -72,6 +76,16 @@ def main():
             embeddings_file = os.path.join("openai_computed_embeddings", f"{filename}")
 
             vector_store.save_local(embeddings_file)
+        else:
+            vector_store = faiss.FAISS.load_local(embeddings_file, OpenAIEmbeddings())
+            
+
+        # Get user input
+        query = st.text_input("Ask Questions")
+
+        if query:
+            similar_docs = vector_store.similarity_search(query=query)
+            st.write(similar_docs)
 
 
 if __name__ == "__main__":
